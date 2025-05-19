@@ -8,10 +8,21 @@ A detailed report is attached with this repository. In **Chapter 3**, we dive de
 
 ## 🛠️ Hardware & Modules Used
 
-During the project, we experimented with multiple LoRa modules:
-- Seeed Studio Grove LoRa Modules
-- Heltec LoRa ESP32 Modules
-- Ra02 Modules (final working prototype)
+Throughout the project, we **experimented and worked with** a variety of LoRa modules and sensors, though they are **not all included in the final implementation**:
+
+### LoRa Modules:
+- **ESP32**
+- **Arduino**
+- **Heltec ESP32 LoRa Modules V3**
+- **Seeed Studio Grove LoRa Modules**
+- **Ra02 Modules** (used in the final working prototype)
+
+### Sensors:
+- **DHT11** (Temperature and Humidity)
+- **BMP180** (Atmospheric Pressure)
+- **PMS7003** (not used in the final project)
+- **MQ4 and MQ7** (Gas Sensors)
+- **DSM501A** (Dust Sensor)
 
 ## 📂 Project Structure
 
