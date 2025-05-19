@@ -26,7 +26,7 @@ The project was tested over a distance of **1 km**, where the data from pressure
 - Many intermediate files and different implementation attempts are included.
 - We explored communication using two ESP modules.
 - Integration of gas sensors and conversion algorithms were also part of the project.
-- Some files are missing as multiple approaches were tested and discarded.
+- Many files and alternative implementations are lost to time, sadly.
 
 ## 🎓 About
 
