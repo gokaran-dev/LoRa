@@ -1,5 +1,5 @@
 #include <RH_RF95.h>
-
+#include <SPI.h>
 #ifdef __AVR__
     #include <SoftwareSerial.h>
     SoftwareSerial SSerial(6, 7); // RX, TX
@@ -8,7 +8,16 @@
 
     RH_RF95<SoftwareSerial> rf95(COMSerial);
 #endif
+
 uint8_t a=0;
+
+struct Data{
+  int b;
+  int c;
+}
+
+Data data={1,2};
+
 void setup() {
     ShowSerial.begin(115200);
     ShowSerial.println("RF95 client test.");
@@ -25,22 +34,28 @@ void setup() {
     // you can set transmitter powers from 5 to 23 dBm:
     //rf95.setTxPower(13, false);
 
-    rf95.setFrequency(470.0);
-    rf95.setTxPower(2);
+    rf95.setFrequency(433.0);
+    rf95.setTxPower(12);
     uint8_t a=1;
 }
 
 void loop() {
-    ShowSerial.println("Sending to rf95_server");
-    // Send a message to rf95_server
-    char someString[15] = "battery: %i";
-    char test[30];
-    snprintf(test, 30, someString, a);
-    ShowSerial.println(test);
-    
-    delay(10);
-    a++;
-    rf95.send((uint8_t *)test, 30);
+    ShowSerial.println("Sending to server");
+    ShowSerial.print("b=");
+    ShowSerial.print(data.b);
+    ShowSerial.print("c=");
+    ShowSerial.print(data.c);
+
+    //sending packet
+    rf95.send((byte *)&data, sizeof(data));
+    for(unsigned int i=0; i<sizeof(Data); i++)
+    {
+      ShowSerial.print(' ');
+      ShowSerial.print(((byte *) &data)[i]);
+    }
+    data.b = data.b+1;
+    data.c = data.c+10;
+
     delay(5000);
 }
 

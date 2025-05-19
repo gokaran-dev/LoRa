@@ -8,17 +8,15 @@ float t,h;
  
 #define DHTTYPE DHT11
 DHT dht(DHTPIN, DHTTYPE);
-
 #include <LoRa.h> 
 #define ss 10
 #define rst 9
 #define dio0 2
-
 SFE_BMP180 pressure;
 double T,P,p0,a;
 double baseline; // baseline pressure
 #define ALTITUDE 1655.0
-
+/////////////////////////
 #include<string.h>
 #define PM1PIN A0//DSM501A input D6 on ESP8266
 #define PM25PIN A1
@@ -34,6 +32,22 @@ int i=0;
 float conPM1=0;
 float conPM25=0;
 /////////////////////////
+
+  #include <MQUnifiedsensor.h>
+
+  #define placa "Arduino UNO"
+  #define Voltage_Resolution 5
+  #define pin1 A1
+  #define type1 "MQ-7"
+  #define ADC_Bit_Resolution 10
+  #define RatioMQ7CleanAir 27.5
+
+
+  MQUnifiedsensor MQ7(placa, Voltage_Resolution, ADC_Bit_Resolution, pin1, type1);
+  unsigned long oldTime=0;
+  float MQ7Data;
+
+
 void setup() 
 {
   
@@ -57,10 +71,32 @@ void setup()
   Serial.println("BMP180 init success");
   else
   {
+    // Oops, something went wrong, this is usually a connection problem,
+    // see the comments at the top of this sketch for the proper connections.
     Serial.println("BMP180 init fail (disconnected?)\n\n");
     while(1); // Pause forever.
   }
   // delay(1000);
+
+  MQ7.setRegressionMethod(1);
+  MQ7.setA(99.042); MQ7.setB(-1.518);
+  MQ7.init();
+
+  Serial.print("Calibrating please wait.");
+  float calcR0 = 0;
+  for(int i = 1; i<=10; i ++)
+  {
+    MQ7.update(); // Update data, the arduino will read the voltage from the analog pin
+    calcR0 += MQ7.calibrate(RatioMQ7CleanAir);
+    Serial.print(".");
+  }
+  MQ7.setR0(calcR0/10);
+  Serial.println("  done!.");
+  
+  if(isinf(calcR0)) {Serial.println("Warning: Conection issue, R0 is infinite (Open circuit detected) please check your wiring and supply"); while(1);}
+  if(calcR0 == 0){Serial.println("Warning: Conection issue found, R0 is zero (Analog pin shorts to ground) please check your wiring and supply"); while(1);}
+  /*****************************  MQ CAlibration ********************************************/ 
+ 
   
 }
 
@@ -90,8 +126,8 @@ void loop()
   durationPM1 = pulseIn(PM1PIN, LOW);
   durationPM25 = pulseIn(PM25PIN, LOW);
   
-  lowpulseoccupancyPM1 = lowpulseoccupancyPM1 + durationPM1;
-  lowpulseoccupancyPM25 = lowpulseoccupancyPM25 +  durationPM25;
+  lowpulseoccupancyPM1 += durationPM1;
+  lowpulseoccupancyPM25 += durationPM25;
   
   endtime = millis();
   if ((endtime-starttime) > sampletime_ms) //Only after 30s has passed we calcualte the ratio
@@ -130,6 +166,17 @@ void loop()
  LoRa.beginPacket();
  LoRa.print(data);
  LoRa.endPacket();
+
+ 
+
+    // VH 5 Volts
+    analogWrite(5, 255); // 255 is DC 5V output
+    MQ7.update(); // Update data, the arduino will read the voltage from the analog pin
+    MQ7Data=MQ7.readSensor(); // Sensor will read PPM concentration using the model, a and b values set previously or from the setup
+    Serial.println(MQ7Data);
+    delay(500); //Sampling frequency
+  
+
 }
 
 double getPressure()
